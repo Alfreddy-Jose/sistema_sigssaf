@@ -29,11 +29,11 @@ RUN mkdir -p database && touch database/database.sqlite
 # Instala dependencias de PHP
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Configurar permisos
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache \
-    && chmod -R 755 storage bootstrap/cache database
+    && chmod -R 755 storage bootstrap/cache database \
+    && chmod 664 /var/www/html/database/database.sqlite
 
 # Expone el puerto 8000
 EXPOSE 8000
