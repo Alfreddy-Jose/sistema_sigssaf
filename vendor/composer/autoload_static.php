@@ -626,6 +626,7 @@ class ComposerStaticInit3c912e9742101e8bbc559255f4dd3d0e
         'App\\Http\\Controllers\\AsignacionesController' => __DIR__ . '/../..' . '/app/Http/Controllers/AsignacionesController.php',
         'App\\Http\\Controllers\\Auth\\ForgotPasswordController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/ForgotPasswordController.php',
         'App\\Http\\Controllers\\Auth\\ResetPasswordController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/ResetPasswordController.php',
+        'App\\Http\\Controllers\\AyudasController' => __DIR__ . '/../..' . '/app/Http/Controllers/AyudasController.php',
         'App\\Http\\Controllers\\BancoController' => __DIR__ . '/../..' . '/app/Http/Controllers/BancoController.php',
         'App\\Http\\Controllers\\BitacoraController' => __DIR__ . '/../..' . '/app/Http/Controllers/BitacoraController.php',
         'App\\Http\\Controllers\\ComunaController' => __DIR__ . '/../..' . '/app/Http/Controllers/ComunaController.php',

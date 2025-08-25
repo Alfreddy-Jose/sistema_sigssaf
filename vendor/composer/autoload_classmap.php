@@ -11,6 +11,7 @@ return array(
     'App\\Http\\Controllers\\AsignacionesController' => $baseDir . '/app/Http/Controllers/AsignacionesController.php',
     'App\\Http\\Controllers\\Auth\\ForgotPasswordController' => $baseDir . '/app/Http/Controllers/Auth/ForgotPasswordController.php',
     'App\\Http\\Controllers\\Auth\\ResetPasswordController' => $baseDir . '/app/Http/Controllers/Auth/ResetPasswordController.php',
+    'App\\Http\\Controllers\\AyudasController' => $baseDir . '/app/Http/Controllers/AyudasController.php',
     'App\\Http\\Controllers\\BancoController' => $baseDir . '/app/Http/Controllers/BancoController.php',
     'App\\Http\\Controllers\\BitacoraController' => $baseDir . '/app/Http/Controllers/BitacoraController.php',
     'App\\Http\\Controllers\\ComunaController' => $baseDir . '/app/Http/Controllers/ComunaController.php',
