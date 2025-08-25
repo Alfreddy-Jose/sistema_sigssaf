@@ -17,17 +17,12 @@ RUN apt-get update && apt-get install -y \
 # Instala Composer
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
-# Instala dependencias de Node.js
-RUN npm install && npm run build
-
 # Configura el directorio de trabajo
 WORKDIR /var/www/html
 
 # Copia el código de la aplicación
 COPY . .
 
-# Crear enlace simbólico de storage
-RUN php artisan storage:link
 
 # ELIMINAR y CREAR base de datos SQLite
 RUN rm -f /var/www/html/database/database.sqlite && \
