@@ -23,6 +23,16 @@ WORKDIR /var/www/html
 # Copia el código de la aplicación
 COPY . .
 
+# Compilar assets
+RUN if [ -f "package.json" ]; then \
+    npm install && npm run build; \
+    else \
+    php artisan vendor:publish --tag=public --force; \
+    fi
+
+# Crear enlace simbólico de storage
+RUN php artisan storage:link
+
 # ELIMINAR y CREAR base de datos SQLite
 RUN rm -f /var/www/html/database/database.sqlite && \
     mkdir -p /var/www/html/database && \
