@@ -4,8 +4,8 @@ FROM php:8.1-apache-bullseye
 # Establecer el directorio de trabajo
 WORKDIR /var/www/html
 
-# Instalar dependencias del sistema INCLUYENDO SQLite
-RUN apt-get update && apt-get install -y \
+# Actualizar lista de paquetes e instalar dependencias CON MANEJO DE ERRORES
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     libpng-dev \
@@ -17,8 +17,13 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     sqlite3 \
     libsqlite3-dev \
-    && docker-php-ext-install pdo pdo_pgsql pdo_sqlite sqlite3 mbstring exif pcntl bcmath gd zip \
-    && a2enmod rewrite
+    && rm -rf /var/lib/apt/lists/*
+
+# Instalar extensiones de PHP por separado
+RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip
+
+# Habilitar mod_rewrite de Apache
+RUN a2enmod rewrite
 
 # Instalar Composer
 COPY --from=composer:2.4 /usr/bin/composer /usr/bin/composer
