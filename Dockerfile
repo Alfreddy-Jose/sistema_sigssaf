@@ -41,5 +41,21 @@ RUN chown -R www-data:www-data /var/www/html \
 # Expone el puerto 8000
 EXPOSE 8000
 
-# Comando de inicio simplificado
-CMD sh -c "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"
+CMD sh -c "\
+    # Generar APP_KEY si no existe
+    if [ -z \"$(grep 'APP_KEY=' .env)\" ]; then \
+        php artisan key:generate --force; \
+    fi && \
+    \
+    # Verificar la key
+    echo 'APP_KEY: ' && grep 'APP_KEY' .env && \
+    \
+    # Migrar y ejecutar seeders
+    php artisan migrate --force && \
+    php artisan db:seed --force && \
+    \
+    # Configurar cache para producción
+    php artisan config:cache && \
+    php artisan route:cache && \
+    \
+    php artisan serve --host=0.0.0.0 --port=8000"
