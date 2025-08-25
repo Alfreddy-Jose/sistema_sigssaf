@@ -39,14 +39,14 @@ RUN mkdir -p /var/www/html/database \
 # Crear enlace simbólico de storage
 RUN php artisan storage:link || ln -sfn /var/www/html/storage/app/public /var/www/html/public/storage
 
-# Optimizar la aplicación
+# SOLUCIÓN: Optimizar SIN route:cache (eliminado completamente)
 RUN php artisan optimize:clear && \
-    php artisan view:cache && \
-    php artisan route:cache && \
-    php artisan config:cache
+    php artisan config:cache && \
+    php artisan view:cache
+    # php artisan route:cache  # REMOVIDO COMPLETAMENTE
 
 # Expone el puerto 8000
 EXPOSE 8000
 
-# Comando de inicio
+# Comando de inicio SIN route:cache
 CMD sh -c "php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=8000"
