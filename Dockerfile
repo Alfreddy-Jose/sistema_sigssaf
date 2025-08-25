@@ -1,10 +1,10 @@
-# Usar versión específica de PHP compatible con Laravel 9
-FROM php:8.1-apache-bullseye
+# Usar PHP 8.2 en lugar de 8.1
+FROM php:8.2-apache-bullseye
 
 # Establecer el directorio de trabajo
 WORKDIR /var/www/html
 
-# Actualizar lista de paquetes e instalar dependencias CON MANEJO DE ERRORES
+# Actualizar lista de paquetes e instalar dependencias
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
@@ -25,17 +25,20 @@ RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip
 # Habilitar mod_rewrite de Apache
 RUN a2enmod rewrite
 
-# Instalar Composer
-COPY --from=composer:2.4 /usr/bin/composer /usr/bin/composer
+# Instalar Composer (usa una versión compatible)
+COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
 
 # Crear carpeta database y archivo SQLite
 RUN mkdir -p database && touch database/database.sqlite
 
-# Copiar el código de la aplicación
-COPY . .
+# Copiar primero solo los archivos de Composer para mejor caching
+COPY composer.json composer.lock ./
 
-# Instalar dependencias de PHP (Laravel 9)
+# Instalar dependencias de PHP
 RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Copiar el resto del código
+COPY . .
 
 # Configurar permisos para Laravel y SQLite
 RUN chown -R www-data:www-data /var/www/html \
@@ -52,4 +55,4 @@ RUN chmod +x /usr/local/bin/deploy.sh
 EXPOSE 80
 
 # Comando de inicio
-CMD ["sh", "-c", "deploy.sh && apache2-foreground"]
+CMD ["sh", "-c", "/usr/local/bin/deploy.sh && apache2-foreground"]
