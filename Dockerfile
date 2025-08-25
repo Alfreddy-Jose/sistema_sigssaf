@@ -23,32 +23,34 @@ WORKDIR /var/www/html
 # Copia el código de la aplicación
 COPY . .
 
-
-# ELIMINAR y CREAR base de datos SQLite
-RUN rm -f /var/www/html/database/database.sqlite && \
-    mkdir -p /var/www/html/database && \
-    touch /var/www/html/database/database.sqlite && \
-    chmod 664 /var/www/html/database/database.sqlite
-    
-
 # Instala dependencias de PHP
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
+# Configura permisos
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache \
-    && chmod -R 755 storage bootstrap/cache database \
+    && chmod -R 755 /var/www/html/bootstrap/cache
+
+# Crear base de datos SQLite
+RUN mkdir -p /var/www/html/database \
+    && touch /var/www/html/database/database.sqlite \
     && chmod 664 /var/www/html/database/database.sqlite
 
-# Publicar assets de vendor (solo si es necesario)
-RUN php artisan vendor:publish --tag=public --force --no-interaction || echo "No hay assets para publicar"
+# Publicar assets CRÍTICOS de vendor
+RUN php artisan vendor:publish --tag=laravel-assets --force --no-interaction || \
+    php artisan vendor:publish --provider="Illuminate\Foundation\ProviderRepository" --force --no-interaction || \
+    echo "Publicación de assets completada"
 
 # Crear enlace simbólico de storage
 RUN php artisan storage:link || ln -sfn /var/www/html/storage/app/public /var/www/html/public/storage
 
+# Optimizar la aplicación
+RUN php artisan optimize:clear && \
+    php artisan view:cache && \
+    php artisan event:cache
 
 # Expone el puerto 8000
 EXPOSE 8000
 
-# Comando de inicio simplificado
+# Comando de inicio
 CMD sh -c "php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=8000"
