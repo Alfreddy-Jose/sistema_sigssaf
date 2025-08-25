@@ -42,7 +42,7 @@ RUN php artisan storage:link || ln -sfn /var/www/html/storage/app/public /var/ww
 # Optimizar la aplicación con HTTPS forzado
 RUN php artisan config:cache && \
     php artisan view:cache && \
-    php artisan route:cache
+    # php artisan route:cache
 
 # Optimizar la aplicación
 RUN php artisan optimize:clear && \
