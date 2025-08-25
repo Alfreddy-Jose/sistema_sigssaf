@@ -1,6 +1,6 @@
 FROM php:8.2-cli
 
-# Instala dependencias del sistema
+# Instala dependencias del sistema incluyendo Node.js
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -12,10 +12,16 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     sqlite3 \
     libsqlite3-dev \
+    gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
     && docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip
 
 # Instala Composer
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+
+# Instala dependencias de Node.js
+RUN npm install && npm run build
 
 # Configura el directorio de trabajo
 WORKDIR /var/www/html
@@ -34,6 +40,7 @@ RUN rm -f /var/www/html/database/database.sqlite && \
     mkdir -p /var/www/html/database && \
     touch /var/www/html/database/database.sqlite && \
     chmod 664 /var/www/html/database/database.sqlite
+    
 
 # Instala dependencias de PHP
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -43,6 +50,13 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/bootstrap/cache \
     && chmod -R 755 storage bootstrap/cache database \
     && chmod 664 /var/www/html/database/database.sqlite
+
+# Publicar assets de vendor
+RUN php artisan vendor:publish --tag=public --force --no-interaction || echo "No hay assets para publicar"
+
+# Crear enlace simbólico de storage
+RUN php artisan storage:link
+
 
 # Expone el puerto 8000
 EXPOSE 8000
