@@ -1,11 +1,7 @@
-# Usar PHP 8.2
-FROM php:8.2-apache-bullseye
+FROM php:8.2-cli
 
-# Establecer el directorio de trabajo
-WORKDIR /var/www/html
-
-# Actualizar lista de paquetes e instalar dependencias
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Instala dependencias del sistema
+RUN apt-get update && apt-get install -y \
     git \
     curl \
     libpng-dev \
@@ -16,46 +12,31 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libzip-dev \
     sqlite3 \
     libsqlite3-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip
 
-# Instalar extensiones de PHP
-RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip
+# Instala Composer
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
-# Habilitar mod_rewrite de Apache
-RUN a2enmod rewrite
+# Configura el directorio de trabajo
+WORKDIR /var/www/html
 
-# Instalar Composer
-COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
-
-# Crear carpeta database y archivo SQLite
-RUN mkdir -p database && touch database/database.sqlite
-
-# Copiar primero solo los archivos de Composer para mejor caching
-COPY composer.json composer.lock ./
-
-# Instalar dependencias de PHP
-RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-# Copiar el resto del código (INCLUYENDO deploy.sh)
+# Copia el código de la aplicación
 COPY . .
 
-# Configurar permisos para Laravel y SQLite
+# Crea la base de datos SQLite
+RUN mkdir -p database && touch database/database.sqlite
+
+# Instala dependencias de PHP
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+
+# Configurar permisos
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache \
-    && chmod 664 /var/www/html/database/database.sqlite \
-    && chmod 775 /var/www/html/database
+    && chmod -R 755 /var/www/html/bootstrap/cache
+    chmod -R 755 storage bootstrap/cache database
 
-# Verificar que deploy.sh existe y dar permisos
-RUN if [ ! -f /usr/local/bin/deploy.sh ]; then \
-    echo "❌ deploy.sh no encontrado, copiando..."; \
-    cp deploy.sh /usr/local/bin/deploy.sh; \
-    fi
+# Expone el puerto 8000
+EXPOSE 8000
 
-RUN chmod +x /usr/local/bin/deploy.sh
-
-# Exponer el puerto
-EXPOSE 80
-
-# Comando de inicio (usando ruta absoluta)
-CMD ["sh", "-c", "/usr/local/bin/deploy.sh && apache2-foreground"]
+# Comando de inicio simplificado
+CMD sh -c "php artisan key:generate --force && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"
