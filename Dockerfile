@@ -23,12 +23,8 @@ WORKDIR /var/www/html
 # Copia el código de la aplicación
 COPY . .
 
-# Compilar assets
-RUN if [ -f "package.json" ]; then \
-    npm install && npm run build; \
-    else \
-    php artisan vendor:publish --tag=public --force; \
-    fi
+# SOLUCIÓN: Publicar assets de vendor sin usar npm
+RUN php artisan vendor:publish --tag=public --force --no-interaction || echo "No hay assets para publicar"
 
 # Crear enlace simbólico de storage
 RUN php artisan storage:link
