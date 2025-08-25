@@ -1,6 +1,6 @@
 FROM php:8.2-cli
 
-# Instala dependencias del sistema incluyendo Node.js
+# Instala dependencias del sistema
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -12,9 +12,6 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     sqlite3 \
     libsqlite3-dev \
-    gnupg \
-    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
     && docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip
 
 # Instala Composer
@@ -28,9 +25,6 @@ WORKDIR /var/www/html
 
 # Copia el código de la aplicación
 COPY . .
-
-# SOLUCIÓN: Publicar assets de vendor sin usar npm
-RUN php artisan vendor:publish --tag=public --force --no-interaction || echo "No hay assets para publicar"
 
 # Crear enlace simbólico de storage
 RUN php artisan storage:link
@@ -51,11 +45,11 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 storage bootstrap/cache database \
     && chmod 664 /var/www/html/database/database.sqlite
 
-# Publicar assets de vendor
+# Publicar assets de vendor (solo si es necesario)
 RUN php artisan vendor:publish --tag=public --force --no-interaction || echo "No hay assets para publicar"
 
 # Crear enlace simbólico de storage
-RUN php artisan storage:link
+RUN php artisan storage:link || ln -sfn /var/www/html/storage/app/public /var/www/html/public/storage
 
 
 # Expone el puerto 8000
