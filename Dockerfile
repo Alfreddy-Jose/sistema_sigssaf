@@ -23,8 +23,11 @@ WORKDIR /var/www/html
 # Copia el código de la aplicación
 COPY . .
 
-# Crea la base de datos SQLite
-RUN mkdir -p database && touch database/database.sqlite
+# ELIMINAR y CREAR base de datos SQLite
+RUN rm -f /var/www/html/database/database.sqlite && \
+    mkdir -p /var/www/html/database && \
+    touch /var/www/html/database/database.sqlite && \
+    chmod 664 /var/www/html/database/database.sqlite
 
 # Instala dependencias de PHP
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
