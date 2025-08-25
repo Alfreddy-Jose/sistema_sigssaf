@@ -1,16 +1,6 @@
 #!/bin/bash
 
-# Script de despliegue para Laravel 9 con migraciones y seeders
-
-echo "🚀 Iniciando despliegue de Laravel 9..."
-
-# Verificar si las variables de base de datos están configuradas
-if [ -z "$DB_HOST" ] || [ -z "$DB_DATABASE" ] || [ -z "$DB_USERNAME" ]; then
-    echo "⚠️  Advertencia: Variables de base de datos no configuradas"
-    echo "📋 DB_HOST: $DB_HOST"
-    echo "📋 DB_DATABASE: $DB_DATABASE"
-    echo "📋 DB_USERNAME: $DB_USERNAME"
-fi
+echo "🚀 Iniciando despliegue de Laravel 9 con SQLite..."
 
 # Generar key de aplicación si no existe
 if [ -z "$APP_KEY" ]; then
@@ -18,6 +8,13 @@ if [ -z "$APP_KEY" ]; then
     php artisan key:generate --force
 else
     echo "✅ APP_KEY ya configurado"
+fi
+
+# Crear base de datos SQLite si no existe
+if [ ! -f database/database.sqlite ]; then
+    echo "🗃️ Creando base de datos SQLite..."
+    touch database/database.sqlite
+    chmod 664 database/database.sqlite
 fi
 
 # Optimizar la aplicación
@@ -30,33 +27,20 @@ php artisan view:cache
 echo "📁 Configurando permisos..."
 chmod -R 775 storage/
 chmod -R 775 bootstrap/cache/
+chmod 664 database/database.sqlite
 
-# Esperar a que la base de datos esté disponible (solo si DB_HOST está configurado)
-if [ ! -z "$DB_HOST" ]; then
-    echo "⏳ Esperando a que la base de datos esté disponible..."
-    until nc -z -v -w30 $DB_HOST ${DB_PORT:-5432}; do
-        echo "⏰ Esperando conexión de base de datos..."
-        sleep 2
-    done
-    echo "✅ Base de datos disponible"
+# Ejecutar migraciones con SQLite
+echo "🔄 Ejecutando migraciones con SQLite..."
+php artisan migrate --force
 
-    # Ejecutar migraciones
-    echo "🔄 Ejecutando migraciones..."
-    php artisan migrate --force
-
-    # Verificar si hay seeders para ejecutar
-    if [ ! -z "$RUN_SEEDERS" ] && [ "$RUN_SEEDERS" = "true" ]; then
-        echo "🌱 Ejecutando seeders..."
-        php artisan db:seed --force
-    else
-        echo "📊 Seeders omitidos (configura RUN_SEEDERS=true para ejecutarlos)"
-    fi
-
-    # Generar storage link
-    echo "🔗 Creando enlace de almacenamiento..."
-    php artisan storage:link --force
-else
-    echo "⚠️  Base de datos no configurada, omitiendo migraciones"
+# Ejecutar seeders si está configurado
+if [ "$RUN_SEEDERS" = "true" ]; then
+    echo "🌱 Ejecutando seeders..."
+    php artisan db:seed --force
 fi
 
-echo "✅ Despliegue completado!"
+# Generar storage link
+echo "🔗 Creando enlace de almacenamiento..."
+php artisan storage:link --force
+
+echo "✅ Despliegue completado con SQLite!"
