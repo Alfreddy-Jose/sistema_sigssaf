@@ -39,15 +39,11 @@ RUN mkdir -p /var/www/html/database \
 # Crear enlace simbólico de storage
 RUN php artisan storage:link || ln -sfn /var/www/html/storage/app/public /var/www/html/public/storage
 
-# Optimizar la aplicación con HTTPS forzado
-RUN php artisan config:cache && \
-    php artisan view:cache && \
-    # php artisan route:cache
-
 # Optimizar la aplicación
 RUN php artisan optimize:clear && \
     php artisan view:cache && \
-    php artisan event:cache
+    php artisan route:cache && \
+    php artisan config:cache
 
 # Expone el puerto 8000
 EXPOSE 8000
