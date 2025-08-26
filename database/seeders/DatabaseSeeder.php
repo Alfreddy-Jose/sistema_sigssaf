@@ -22,11 +22,16 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         // $this->call(SuperAdminSeeder::class);
-        $this->call(AsistSeeder::class);
-        $this->call(CoordinadorSeeder::class);
-        $this->call(AlvaroValeroSeeder::class);
+
+        $this->call(
+            [
+                SeederTablaPermisos::class,
+                AlvaroValeroSeeder::class,
+                CoordinadorSeeder::class,
+                AsistSeeder::class
+            ]
+            );
         //$this->call(EstadisticaSeeder::class);
         //$this->call(JoseFernandoSeeder::class);
-        // $this->call(SeederTablaPermisos::class);
     }
 }

@@ -18,7 +18,7 @@ class SeederTablaPermisos extends Seeder
     public function run()
     {
         $permisos = [
-                                                    /* DESCOMENTAR AL EJECUTAR EL SEEDER LA PRIMERA VEZ (SI NO HAY REGISTROS EN LA BASE DE DTAOS) */
+            /* DESCOMENTAR AL EJECUTAR EL SEEDER LA PRIMERA VEZ (SI NO HAY REGISTROS EN LA BASE DE DTAOS) */
             //Operaciones sobre tabla Usuarios
             'ver-usuario',
             'crear-usuario',
