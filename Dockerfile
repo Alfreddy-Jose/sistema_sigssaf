@@ -31,22 +31,21 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
-# Crear base de datos SQLite
-RUN mkdir -p /var/www/html/database \
-    && touch /var/www/html/database/database.sqlite \
-    && chmod 664 /var/www/html/database/database.sqlite
+# Crear base de datos SQLite y directorio
+RUN mkdir -p /var/www/html/database && \
+    touch /var/www/html/database/database.sqlite && \
+    chmod 664 /var/www/html/database/database.sqlite
 
 # Crear enlace simbólico de storage
 RUN php artisan storage:link || ln -sfn /var/www/html/storage/app/public /var/www/html/public/storage
 
-# SOLUCIÓN: Optimizar SIN route:cache (eliminado completamente)
+# Optimizar SIN route:cache
 RUN php artisan optimize:clear && \
     php artisan config:cache && \
     php artisan view:cache
-    # php artisan route:cache  # REMOVIDO COMPLETAMENTE
 
 # Expone el puerto 8000
 EXPOSE 8000
 
-# Comando de inicio SIN route:cache
+# Comando de inicio con verificación de base de datos
 CMD sh -c "php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=8000"
